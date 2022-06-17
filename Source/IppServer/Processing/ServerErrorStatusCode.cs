@@ -22,7 +22,7 @@
 //  SOFTWARE.
 // -----------------------------------------------------------------------
 
-namespace IppServer;
+namespace IppServer.Processing;
 
 public enum StatusCode
 {

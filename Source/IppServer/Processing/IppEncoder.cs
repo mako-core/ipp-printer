@@ -22,37 +22,51 @@
 //  SOFTWARE.
 // -----------------------------------------------------------------------
 
-using System.Text;
+using System.Buffers.Binary;
+using IppServer.Models;
+using IppServer.Values;
 
-namespace IppServer;
+namespace IppServer.Processing;
 
-public class IppGroup
+public static class IppEncoder
 {
-    public IppGroup(AttributesTag tag)
+    public static ReadOnlySpan<byte> Encode(IppResponse response)
     {
-        Tag = tag;
-    }
-
-    public IppGroup(AttributesTag tag, IList<IppAttribute> attributes)
-    {
-        Tag = tag;
-        Attributes = attributes;
-    }
-
-    public AttributesTag Tag { get; }
-
-    public IList<IppAttribute> Attributes { get; } = new List<IppAttribute>();
-
-    public override string ToString()
-    {
-        var stringBuilder = new StringBuilder();
-        stringBuilder.AppendLine($"\tGroup tag: {Tag}");
-    
-        foreach (var attribute in Attributes)
+        var buffer = new List<byte>
         {
-            stringBuilder.AppendLine(attribute.ToString());
+            (byte) response.MajorVersion,
+            (byte) response.MinorVersion
+        };
+
+        var statusCode = new byte[2];
+        BinaryPrimitives.TryWriteInt16BigEndian(statusCode, (short) response.StatusCode);
+        buffer.AddRange(statusCode);
+
+        var requestId = new byte[4];
+        BinaryPrimitives.TryWriteInt32BigEndian(requestId, response.RequestId);
+        buffer.AddRange(requestId);
+
+        foreach (var group in response.Groups)
+        {
+            buffer.Add((byte) group.Tag);
+
+            foreach (var attribute in group.Attributes)
+            {
+                var firstAttribute = true;
+                foreach (var value in attribute.Values)
+                {
+                    buffer.Add((byte) attribute.Value);
+
+                    new IppString(firstAttribute ? attribute.Name : string.Empty).Encode(buffer);
+                    firstAttribute = false;
+
+                    value.Encode(buffer);
+                }
+            }
         }
-    
-        return stringBuilder.ToString();
+
+        buffer.Add((byte) AttributesTag.END_OF_ATTRIBUTES_TAG);
+
+        return new ReadOnlySpan<byte>(buffer.ToArray());
     }
 }

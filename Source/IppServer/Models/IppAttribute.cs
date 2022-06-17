@@ -24,22 +24,22 @@
 
 using IppServer.Values;
 
-namespace IppServer;
+namespace IppServer.Models;
 
 public class IppAttribute
 {
-    public IppAttribute(Tag tag, string name)
+    public IppAttribute(Value value, string name)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
 
-        Tag = tag;
+        Value = value;
         Name = name;
     }
 
-    public Tag Tag { get; set; }
-    public string Name { get; set; }
-    public IList<IIppValue> Values { get; set; } = new List<IIppValue>();
+    public Value Value { get; }
+    public string Name { get; }
+    public IList<IIppValue> Values { get; init; } = new List<IIppValue>();
 
     public override string ToString()
     {
@@ -48,6 +48,6 @@ public class IppAttribute
 
         var attributeValues = Values.Select(v => v.ToString()).Aggregate((combined, next) => $"{combined}, {next}");
         
-        return $"\t\tAttribute tag: {Tag} - {Name} - {attributeValues}";
+        return $"\t\tAttribute tag: {Value} - {Name} - {attributeValues}";
     }
 }

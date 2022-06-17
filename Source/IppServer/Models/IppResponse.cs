@@ -23,8 +23,9 @@
 // -----------------------------------------------------------------------
 
 using System.Text;
+using IppServer.Processing;
 
-namespace IppServer;
+namespace IppServer.Models;
 
 public class IppResponse
 {
@@ -34,10 +35,26 @@ public class IppResponse
         RequestId = requestId;
     }
 
-    public int MajorVersion { get; set; } = 1;
-    public int MinorVersion { get; set; } = 1;
-    public StatusCode StatusCode { get; set; }
-    public int RequestId { get; set; }
+    public static Task<IppResponse> CreateErrorResponse(StatusCode statusCode, int requestId)
+    {
+        var response = new IppResponse(statusCode, requestId);
+        response.Groups.Add(IppGroup.CreateOperationAttributesGroup());
+
+        return Task.FromResult(response);
+    }
+
+    public static Task<IppResponse> CreateSuccessResponse(int requestId)
+    {
+        var response = new IppResponse((short)StatusCode.SUCCESSFUL_OK, requestId);
+        response.Groups.Add(IppGroup.CreateOperationAttributesGroup());
+
+        return Task.FromResult(response);
+    }
+
+    public int MajorVersion { get; } = 1;
+    public int MinorVersion { get; } = 1;
+    public StatusCode StatusCode { get; }
+    public int RequestId { get; }
     public List<IppGroup> Groups { get; } = new();
 
     public override string ToString()

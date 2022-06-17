@@ -22,8 +22,11 @@
 //  SOFTWARE.
 // -----------------------------------------------------------------------
 
-namespace IppServer;
+using IppServer.Models;
 
-public interface IIppJob
+namespace IppServer.Processing;
+
+public interface IIppPrinterService
 {
+    Task<IppResponse> Process(IppRequest request);
 }

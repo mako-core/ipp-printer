@@ -22,8 +22,8 @@
 //  SOFTWARE.
 // -----------------------------------------------------------------------
 
-namespace IppServer;
+namespace IppServer.Models;
 
-public interface IIppPrinter
+public interface IIppJob
 {
 }

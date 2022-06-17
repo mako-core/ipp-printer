@@ -1,4 +1,4 @@
-// -----------------------------------------------------------------------
+﻿// -----------------------------------------------------------------------
 //  MIT License
 //  
 //  Copyright (c) 2022 Global Graphics Software Ltd.
@@ -22,48 +22,36 @@
 //  SOFTWARE.
 // -----------------------------------------------------------------------
 
-using IppServer.Processing;
+namespace IppServer.Values;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services.AddSingleton<IIppPrinterService>(new IppPrinterService());
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+public enum Value
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // Value Tags (out-of-band)
+    UNSUPPORTED = 0x10,
+    UNKNOWN = 0x12,
+    NO_VALUE = 0x13,
+
+    // Value Tags (integer)
+    INTEGER = 0x21,
+    BOOLEAN = 0x22,
+    ENUM = 0x23,
+
+    // Value Tags (octet-string)
+    OCTET_STRING = 0x30, // With unspecified format
+    DATE_TIME = 0x31,
+    RESOLUTION = 0x32,
+    RANGE_OF_INTEGER = 0x33,
+    COLLECTION = 0x34,
+    TEXT_WITH_LANG = 0x35,
+    NAME_WITH_LANG = 0x36,
+
+    // Value Tags (character-string)
+    TEXT_WITHOUT_LANG = 0x41,
+    NAME_WITHOUT_LANG = 0x42,
+    KEYWORD = 0x44,
+    URI = 0x45,
+    URI_SCHEME = 0x46,
+    CHARSET = 0x47,
+    NATURAL_LANG = 0x48,
+    MIME_MEDIA_TYPE = 0x49,
 }
-
-app.UseHttpsRedirection();
-
-app.MapPost("/ipp/print", async (IIppPrinterService server, HttpRequest httpRequest) =>
-{
-    using var memory = new MemoryStream();
-    
-    await httpRequest.Body.CopyToAsync(memory);
-
-    var request = IppDecoder.Decode(memory.ToArray());
-    
-    Console.WriteLine("Incoming request:");
-    Console.WriteLine(request.ToString());
-
-    var response = await server.Process(request); 
-    
-    Console.WriteLine();
-    Console.WriteLine("Outgoing response:");
-    Console.WriteLine(response.ToString());
-
-    var bytes = IppEncoder.Encode(response).ToArray();
-
-    return Results.Bytes(bytes, "application/ipp");
-});
-
-app.Run();

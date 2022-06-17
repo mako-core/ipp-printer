@@ -1,4 +1,4 @@
-// -----------------------------------------------------------------------
+﻿// -----------------------------------------------------------------------
 //  MIT License
 //  
 //  Copyright (c) 2022 Global Graphics Software Ltd.
@@ -22,48 +22,43 @@
 //  SOFTWARE.
 // -----------------------------------------------------------------------
 
+using System.Text;
 using IppServer.Processing;
 
-var builder = WebApplication.CreateBuilder(args);
+namespace IppServer.Models;
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services.AddSingleton<IIppPrinterService>(new IppPrinterService());
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+public class IppRequest
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    public IppRequest(int majorVersion, int minorVersion, Operation operation, int id)
+    {
+        MajorVersion = majorVersion;
+        MinorVersion = minorVersion;
+        Operation = operation;
+        Id = id;
+    }
+
+    public int MajorVersion { get; }
+
+    public int MinorVersion { get; }
+
+    public Operation Operation { get; }
+
+    public int Id { get; }
+
+    public List<IppGroup> Groups { get; } = new();
+
+    public override string ToString()
+    {
+        var stringBuilder = new StringBuilder();
+        stringBuilder.AppendLine($"Version: {MajorVersion}.{MinorVersion}");
+        stringBuilder.AppendLine($"Operation: {Operation}");
+        stringBuilder.AppendLine($"Request ID: {Id}");
+    
+        foreach (var ippGroup in Groups)
+        {
+            stringBuilder.Append(ippGroup);
+        }
+    
+        return stringBuilder.ToString();
+    }
 }
-
-app.UseHttpsRedirection();
-
-app.MapPost("/ipp/print", async (IIppPrinterService server, HttpRequest httpRequest) =>
-{
-    using var memory = new MemoryStream();
-    
-    await httpRequest.Body.CopyToAsync(memory);
-
-    var request = IppDecoder.Decode(memory.ToArray());
-    
-    Console.WriteLine("Incoming request:");
-    Console.WriteLine(request.ToString());
-
-    var response = await server.Process(request); 
-    
-    Console.WriteLine();
-    Console.WriteLine("Outgoing response:");
-    Console.WriteLine(response.ToString());
-
-    var bytes = IppEncoder.Encode(response).ToArray();
-
-    return Results.Bytes(bytes, "application/ipp");
-});
-
-app.Run();

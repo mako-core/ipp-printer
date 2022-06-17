@@ -22,30 +22,54 @@
 //  SOFTWARE.
 // -----------------------------------------------------------------------
 
-using System.Text;
+using IppServer.Processing;
 
-namespace IppServer;
+namespace IppServer.Values;
 
-public class IppRequest
+public class IppCollection : IIppValue
 {
-    public int MajorVersion { get; set; }
-    public int MinorVersion { get; set; }
-    public Operation Operation { get; set; }
-    public  int Id { get; set; }
-    public List<IppGroup> Groups { get; } = new();
+    public Dictionary<string, IIppValue> Members { get; }
 
-    public override string ToString()
+    public void Encode(List<byte> buffer)
     {
-        var stringBuilder = new StringBuilder();
-        stringBuilder.AppendLine($"Version: {MajorVersion}.{MinorVersion}");
-        stringBuilder.AppendLine($"Operation: {Operation}");
-        stringBuilder.AppendLine($"Request ID: {Id}");
-    
-        foreach (var ippGroup in Groups)
+        throw new NotImplementedException();
+    }
+
+    public static IppCollection Decode(ReadOnlySpan<byte> buffer, ref int offset)
+    {
+        // Skip the value length, it's always zero.
+        offset += 2;
+
+        var members = new Dictionary<string, IIppValue>();
+
+        // If we've reached the end, we're done.
+        while (buffer[offset] != 0x37)
         {
-            stringBuilder.Append(ippGroup);
+            // Skip the value tag and name length, they are always 0x4A and zero respectively.
+            offset += 3;
+
+            // Get the value
+            string name = IppString.Decode(buffer, ref offset);
+
+            var tag = buffer[offset++];
+
+            // Skip the empty name length.
+            offset += 2;
+
+            var value = IppDecoder.DecodeValue(buffer, tag, ref offset);
+
+            if (value != null)  
+                members.Add(name, value);
         }
-    
-        return stringBuilder.ToString();
+
+        // Skip the end tag, end name length and end value length, they are always zero.
+        offset += 5;
+
+        return new IppCollection(members);
+    }
+
+    public IppCollection(Dictionary<string, IIppValue> members)
+    {
+        Members = members ?? throw new ArgumentNullException(nameof(members));
     }
 }

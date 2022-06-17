@@ -1,4 +1,4 @@
-// -----------------------------------------------------------------------
+﻿// -----------------------------------------------------------------------
 //  MIT License
 //  
 //  Copyright (c) 2022 Global Graphics Software Ltd.
@@ -22,11 +22,25 @@
 //  SOFTWARE.
 // -----------------------------------------------------------------------
 
-namespace IppServer;
+namespace IppServer.Processing;
 
-public enum PrinterState
-{  
-    PRINTER_IDLE = 3,
-    PRINTER_PROCESSING = 4,
-    PRINTER_STOPPED = 5,
+public enum Operation
+{
+    // Operation Ids
+    PRINT_JOB = 0x02,
+    PRINT_URI = 0x03,
+    VALIDATE_JOB = 0x04,
+    CREATE_JOB = 0x05,
+    SEND_DOCUMENT = 0x06,
+    SEND_URI = 0x07,
+    CANCEL_JOB = 0x08,
+    GET_JOB_ATTRIBUTES = 0x09,
+    GET_JOBS = 0x0a,
+    GET_PRINTER_ATTRIBUTES = 0x0b,
+    HOLD_JOB = 0x0c,
+    RELEASE_JOB = 0x0d,
+    RESTART_JOB = 0x0e,
+    PAUSE_PRINTER = 0x10,
+    RESUME_PRINTER = 0x11,
+    PURGE_JOBS = 0x12,
 }
