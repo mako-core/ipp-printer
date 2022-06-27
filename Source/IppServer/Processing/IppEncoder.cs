@@ -55,7 +55,7 @@ public static class IppEncoder
                 var firstAttribute = true;
                 foreach (var value in attribute.Values)
                 {
-                    buffer.Add((byte) attribute.Value);
+                    buffer.Add((byte) attribute.Tag);
 
                     new IppString(firstAttribute ? attribute.Name : string.Empty).Encode(buffer);
                     firstAttribute = false;

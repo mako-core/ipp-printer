@@ -22,18 +22,20 @@
 //  SOFTWARE.
 // -----------------------------------------------------------------------
 
-using IppServer.Extensions;
 using IppServer.Models;
+using IppServer.Operations;
 
 namespace IppServer.Processing;
 
 class IppPrinterService : IIppPrinterService
 {
+    private static readonly string[] SupportedVersions = { "1.1", "2.0", "2.1" };
+
     private readonly IppPrinter m_printer;
 
     public IppPrinterService()
     {
-        m_printer = new IppPrinter("MyPrinter", 1234, "https://127.0.0.1:7234/ipp/print");
+        m_printer = new IppPrinter("MyPrinter", 1234, "ipps://host.docker.internal:7234/ipp/print");
     }
 
     public Task<IppResponse> Process(IppRequest request)
@@ -41,14 +43,35 @@ class IppPrinterService : IIppPrinterService
         if (request.Id == 0)
             return IppResponse.CreateErrorResponse(StatusCode.CLIENT_ERROR_BAD_REQUEST, 0);
 
-        if (request.MajorVersion > 2)
+        var version = $"{request.MajorVersion}.{request.MinorVersion}";
+
+        if (!SupportedVersions.Contains(version))
             return IppResponse.CreateErrorResponse(StatusCode.SERVER_ERROR_VERSION_NOT_SUPPORTED, request.Id);
+
+        var attributesGroup = request.Groups.FirstOrDefault(g => g.Tag == AttributesTag.OPERATION_ATTRIBUTES_TAG);
+        if (attributesGroup == null)
+            return IppResponse.CreateErrorResponse(StatusCode.CLIENT_ERROR_BAD_REQUEST, request.Id);
+
+        if (attributesGroup.Attributes.Count < 2)
+            return IppResponse.CreateErrorResponse(StatusCode.CLIENT_ERROR_BAD_REQUEST, request.Id);
+
+        // Order is mandated by the spec. This has to be first.
+        if (attributesGroup.Attributes[0].Name != "attributes-charset")
+            return IppResponse.CreateErrorResponse(StatusCode.CLIENT_ERROR_BAD_REQUEST, request.Id);
+
+        // And this one second.
+        if (attributesGroup.Attributes[1].Name != "attributes-natural-language")
+            return IppResponse.CreateErrorResponse(StatusCode.CLIENT_ERROR_BAD_REQUEST, request.Id);
+
+        if (attributesGroup.Attributes.All(a => a.Name != "printer-uri"))
+            return IppResponse.CreateErrorResponse(StatusCode.CLIENT_ERROR_BAD_REQUEST, request.Id);
 
         switch (request.Operation)
         {
             case Operation.GET_PRINTER_ATTRIBUTES:
             {
-                return m_printer.CreateSupportedAttributesResponse(request);
+                var operation = new PrinterAttributesOperation();
+                return operation.Process(m_printer, request);
             }
             case Operation.PURGE_JOBS:
             {
@@ -66,6 +89,10 @@ class IppPrinterService : IIppPrinterService
                 return IppResponse.CreateSuccessResponse(request.Id);
             }
             case Operation.PRINT_JOB:
+            {
+                var operation = new PrintJobOperation();
+                return operation.Process(m_printer, request);
+            }
             case Operation.PRINT_URI:
             case Operation.VALIDATE_JOB:
             case Operation.CREATE_JOB:

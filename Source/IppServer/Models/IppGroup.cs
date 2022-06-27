@@ -23,6 +23,7 @@
 // -----------------------------------------------------------------------
 
 using System.Text;
+using IppServer.Processing;
 using IppServer.Values;
 
 namespace IppServer.Models;

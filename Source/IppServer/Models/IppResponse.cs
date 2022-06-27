@@ -45,14 +45,14 @@ public class IppResponse
 
     public static Task<IppResponse> CreateSuccessResponse(int requestId)
     {
-        var response = new IppResponse((short)StatusCode.SUCCESSFUL_OK, requestId);
+        var response = new IppResponse(StatusCode.SUCCESSFUL_OK, requestId);
         response.Groups.Add(IppGroup.CreateOperationAttributesGroup());
 
         return Task.FromResult(response);
     }
 
-    public int MajorVersion { get; } = 1;
-    public int MinorVersion { get; } = 1;
+    public int MajorVersion => 1;
+    public int MinorVersion => 1;
     public StatusCode StatusCode { get; }
     public int RequestId { get; }
     public List<IppGroup> Groups { get; } = new();

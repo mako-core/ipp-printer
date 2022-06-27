@@ -22,32 +22,14 @@
 //  SOFTWARE.
 // -----------------------------------------------------------------------
 
-using IppServer.Values;
+namespace IppServer.Processing;
 
-namespace IppServer.Models;
-
-public class IppAttribute
+public enum AttributesTag
 {
-    public IppAttribute(Value tag, string name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
-
-        Tag = tag;
-        Name = name;
-    }
-
-    public Value Tag { get; }
-    public string Name { get; }
-    public IList<IIppValue> Values { get; init; } = new List<IIppValue>();
-
-    public override string ToString()
-    {
-        if (!Values.Any())
-            return string.Empty;
-
-        var attributeValues = Values.Select(v => v.ToString()).Aggregate((combined, next) => $"{combined}, {next}");
-        
-        return $"\t\tAttribute tag: {Tag} - {Name} - {attributeValues}";
-    }
+    // Delimiter Tags
+    OPERATION_ATTRIBUTES_TAG = 0x01,
+    JOB_ATTRIBUTES_TAG = 0x02,
+    END_OF_ATTRIBUTES_TAG = 0x03,
+    PRINTER_ATTRIBUTES_TAG = 0x04,
+    UNSUPPORTED_ATTRIBUTES_TAG = 0x05
 }

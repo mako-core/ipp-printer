@@ -50,6 +50,10 @@ public class IppPrinter : IIppPrinter
 
     public IReadOnlyList<IIppJob> Jobs => m_jobs;
 
+    public List<string> SupportedDocumentFormats { get; } = new() {"application/pdf"};
+
+    public string DefaultDocumentFormat { get; } = "application/pdf";
+
     public void Start()
     {
         State = PrinterState.PRINTER_IDLE;
@@ -110,9 +114,9 @@ public class IppPrinter : IIppPrinter
         new(Value.CHARSET, "charset-supported") {Values = new List<IIppValue>{(IppString)"utf-8"} },
         new(Value.NATURAL_LANG, "natural-language-configured") {Values = new List<IIppValue>{(IppString)"en-us"} },
         new(Value.NATURAL_LANG, "generated-natural-language-supported") {Values = new List<IIppValue>{(IppString)"en-us"} },
-        new(Value.MIME_MEDIA_TYPE, "document-format-default") {Values = new List<IIppValue>{(IppString)"application/pdf" } },
-        new(Value.MIME_MEDIA_TYPE, "document-format-supported") {Values = new List<IIppValue>{(IppString)"application/pdf" } },
-        new(Value.MIME_MEDIA_TYPE, "document-format-preferred") {Values = new List<IIppValue>{(IppString)"application/pdf" } },
+        new(Value.MIME_MEDIA_TYPE, "document-format-default") {Values = new List<IIppValue>{(IppString)DefaultDocumentFormat } },
+        new(Value.MIME_MEDIA_TYPE, "document-format-supported") {Values = SupportedDocumentFormats.Select(d => (IppString)d).Cast<IIppValue>().ToList() },
+        new(Value.MIME_MEDIA_TYPE, "document-format-preferred") {Values = new List<IIppValue>{(IppString)DefaultDocumentFormat } },
         new(Value.BOOLEAN, "printer-is-accepting-jobs") {Values = new List<IIppValue>{(IppBool)true} },
         new(Value.INTEGER, "queued-job-count") {Values = new List<IIppValue>{(IppInt) Jobs.Count} },
         new(Value.KEYWORD, "pdl-override-supported") {Values = new List<IIppValue>{(IppString)"not-attempted" } },

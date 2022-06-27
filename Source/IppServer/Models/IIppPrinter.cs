@@ -35,6 +35,7 @@ public interface IIppPrinter
     DateTime Started { get; }
     IReadOnlyList<IIppJob> Jobs { get; }
     List<IppAttribute> Attributes { get; }
+    List<string> SupportedDocumentFormats { get; }
     void Start();
     void Stop();
     void AddJob(IIppJob job);

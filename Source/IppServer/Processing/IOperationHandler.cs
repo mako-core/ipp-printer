@@ -1,4 +1,4 @@
-﻿// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 //  MIT License
 //  
 //  Copyright (c) 2022 Global Graphics Software Ltd.
@@ -22,14 +22,11 @@
 //  SOFTWARE.
 // -----------------------------------------------------------------------
 
-namespace IppServer;
+using IppServer.Models;
 
-public enum AttributesTag
+namespace IppServer.Processing;
+
+internal interface IOperationHandler
 {
-    // Delimiter Tags
-    OPERATION_ATTRIBUTES_TAG = 0x01,
-    JOB_ATTRIBUTES_TAG = 0x02,
-    END_OF_ATTRIBUTES_TAG = 0x03,
-    PRINTER_ATTRIBUTES_TAG = 0x04,
-    UNSUPPORTED_ATTRIBUTES_TAG = 0x05
+    public Task<IppResponse> Process(IIppPrinter printer, IppRequest request);
 }

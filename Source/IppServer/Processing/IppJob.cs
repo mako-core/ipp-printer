@@ -1,4 +1,4 @@
-﻿// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 //  MIT License
 //  
 //  Copyright (c) 2022 Global Graphics Software Ltd.
@@ -22,32 +22,16 @@
 //  SOFTWARE.
 // -----------------------------------------------------------------------
 
-using IppServer.Values;
+using IppServer.Models;
 
-namespace IppServer.Models;
+namespace IppServer.Processing;
 
-public class IppAttribute
+internal class IppJob : IIppJob
 {
-    public IppAttribute(Value tag, string name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
-
-        Tag = tag;
-        Name = name;
-    }
-
-    public Value Tag { get; }
     public string Name { get; }
-    public IList<IIppValue> Values { get; init; } = new List<IIppValue>();
 
-    public override string ToString()
+    public IppJob(string name)
     {
-        if (!Values.Any())
-            return string.Empty;
-
-        var attributeValues = Values.Select(v => v.ToString()).Aggregate((combined, next) => $"{combined}, {next}");
-        
-        return $"\t\tAttribute tag: {Tag} - {Name} - {attributeValues}";
+        Name = name ?? throw new ArgumentNullException(nameof(name));
     }
 }
